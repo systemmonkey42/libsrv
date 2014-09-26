@@ -1,0 +1,46 @@
+<H2>Simpler sockets</H2>
+
+<P>Sockets provide a programming interface to a network connection.
+Setting up such a connection with the common Un*x library routines is a nuisance, because sockets provide a <EM>very</EM> general, thus complex, means of accessing all sorts of networking interfaces.
+Possibly because of this complexity, the serup of a connection is usually handled quite primitively.</P>
+
+<P>A problem with primitive connection setup is that it fails to handle complicated matters such as fallback servers, load balancing, alternative server nearness and so on.
+Another problem is that every networking tool reinvents the wheel, resulting in many pieces of similar code which are maintained separately.
+This is on one hand typically Un*x because it uses general primitives, but on the other hand it is totally non-Un*x because work is duplicated.
+A serious result of this duplicated work is that different applications apply different strategies to setup a network connection, and that is simply unacceptable.</P>
+
+<P>We have constructed an <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A> intended for connections that can have <CODE>SRV</CODE> record descriptions.
+The library code handles all of load balancing, server prioritisation based on cost, a fallback scheme for pre-<CODE>SRV</CODE> domains, and <EM>in some future perhaps</EM> exploiting knowledge of nearness of alternative servers.
+Moreover, this code is available for use to everyone, under your choice of the <A HREF="http://dns.vanrein.org/srv/lib/LICENSE-GPL">GNU public license</A> or a <A HREF="http://dns.vanrein.org/srv/lib/LINCENSE-BSD">BSD styled license</A>; the latter is intended to offer this library to commercial organisations, although we strongly encourage keeping the source code <A HREF="http://opensource.org">Open Source</A> at all times.</P>
+
+<P>The use of this library is <EM>very</EM> simple, because the use of <CODE>SRV</CODE> records implies that we need not lookup a port number, that we already know we are dealing with either UDP or TCP over the Internet, and that we can locate the server based on the domain name searched.
+We also know that if there are no <CODE>SRV</CODE> records for the addressed domain, that we should try to fall back on <CODE>A</CODE> and <CODE>CNAME</CODE> records, first with the domain name itself and then with the protocol name (such as <CODE>www</CODE>) prefixed to the domain name.
+So, to setup a connection, we simply invoke:
+<PRE>
+int sox = insrv_client ('http', 'tcp', 'vanrein.org')
+</PRE>
+and the connection socket is returned in <CODE>sox</CODE>, ready to go.
+If any of the defined servers failed to connect, others were tried instead, so you are sure you will get a connection if one can possibly be made.
+The code for setting up a server socket is similar; just invoke
+<PRE>
+int sox = insrv_server ('http', 'tcp', 'vanrein.org')
+</PRE>
+and receive a socket in <CODE>sox</CODE>, ready to do run <CODE>accept (sox)</CODE> on to accept connections.
+The connection is only accepted for IP numbers that can be handled locally, and only for ports that are not yet taken, so if you invoke this routine more than once, you will set up all possible server sockets for the local machine.</P>
+
+<P>A simple example of a network service is the HelloWorld service, which sends a message <CODE>Rick says: Hello World!</CODE> to you when you connect to it.
+The <A HREF="http://dns.vanrein.org/srv/lib/server.c">server code</A> and <A HREF="http://dns.vanrein.org/srv/lib/client.c">client code</A> are available for download.
+They should be compiled against the <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A>.
+If you don't know how to do that, you probably shouldn't be reading this at all.</P>
+
+<P>In order to support the invocation of the <CODE>insrv_client</CODE> and <CODE>insrv_server</CODE> routines with <CODE>hello</CODE> as the protocol name, you should define the following <CODE>SRV</CODE> record should be defined for your domain:
+<PRE>
+_hello._tcp  IN SRV  0 0 12345  my.host.name.
+</PRE>
+If you don't have a domain, you can <A HREF="http://dns.vanrein.org">reserve one cheaply</A> almost anywhere, or you can define a false one in a name server that your client and server machine contact for name resolving queries.
+Do this smartly, setting it up so that it cannot really exist on the Internet; for instance, I do my experiments on <CODE>orvelte.nep.</CODE> which ends in a non-existent top-level domain name.</P>
+
+<P>The above suggestion for an <CODE>SRV</CODE> record can of course be extended with all the cutenesses of <CODE>SRV</CODE> records; you may start multiple HelloWorld servers to test them.
+If you do so, start the server with different names, so your clients will tell you which one you hit upon.
+This way, you can experiment with different port numbers for different servers, with different IP numbers on different interfaces (plugin an unconnected networkcard for that, or run an unused <CODE>ipppd</CODE> or use <CODE>lo</CODE>), with cost (afka priorities) and weight.
+<EM>Enjoy!</EM></P>

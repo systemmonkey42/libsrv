@@ -1,0 +1,41 @@
+<H2>Load balancing</H2>
+
+<P>Large companies make efforts to offer load balanced service for their bussiest servers, mostly the web servers.
+Although such schemes are <EM>possible</EM> with the older DNS records, it certainly is somewhat clumsy.
+Let's consider a few schemes.</P>
+
+<P><B>Multiple IPs.</B>
+One name can have multiple IP numbers in the DNS.
+A DNS server will produce these numbers in random order, and most networking clients pick the first one to access the server.
+Although this works nicely, it provides no fallback scheme in the case of a server dropout.
+True, client code could try the next server if one fails, but that scheme is usually not implemented in networking clients.
+Moreover, the DNS gives names out in a cycle, meaning that the breakdown of one server would mean a double load on the second.
+We have built a <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A> that will try all IP numbers until a server accepts a connection, but this still addresses the IP numbers in the DNS-prescribed cycle.</P>
+
+<P><B>One IP, multipe servers.</B>
+It is possible to define only a single IP number in the DNS, and set up multiple servers that externally claim the same IP number but have some way of internal communication to ensure they agree.
+The problem with this approach is that IP numbers are used for routing, and thus all servers are available through the same route.
+If that route goes down, it takes several minutes before routers have adapted to an alternative route to the Internet... if it exists at all!</P>
+
+<P><B>One IP at multiple places.</B>
+I am not sure if this scheme would work at all, but imagine placing servers with the same IP number accross the world.
+The DNS would mention this single IP number, and routers pass on different routes to that IP number.
+The Routing Interface Protocol is designed to remember only the shortest route to an IP number, so the result would be that all routers direct traffic to the nearest-by server.
+However, as with the previous solution, if one server goes down, it takes several minutes for the routers to adapt, which is not always acceptable.</P>
+
+<P><B>Enter SRV records.</B>
+Every <CODE>SRV</CODE> record specifies a relative weight, to be used in load balancing schemes.
+When the <CODE>SRV</CODE> records are sorted on cost (afka priority), they can also be sorted based on this weight factor.
+The idea (as I understood it --- <A HREF="http://dns.vanrein.org/srv/srv-promotion/rfc2782.txt">RFC 2782</A> is not clear about it) is to divide traffic in the ratio specified in the weights, for example:
+<PRE>
+_http._tcp  IN SRV  0 10 80  a.web.host.
+            IN SRV  0 29 80  b.web.host.
+            IN SRV  0 33 80  c.web.host.
+</PRE>
+in this scenario, the r2tio for dividing traffic between hosts <CODE>a:b:c</CODE> should be approximately to the ratio <CODE>10:29:33</CODE>.</P>
+<P>To divide traffic, we cannot trust the DNS servers, which order the <CODE>SRV</CODE> records cyclically and fairly; the ratio gives an unfareness not implemented in what the DNS server sends out.
+So the networking client must take care of this; preferrably in some dedicated <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A>.</P>
+<P>One way to achieve the ratio is to pick a random selection between the servers, weighed according to the weights.
+But a smarter technique is also possibe, where the random number generation is replaced by nearness calculations for each of the hosts.
+<EM>It may be possible to derive such nearness information, in the form of the number of hops to a destination, based on the Router Interface Protocol, but this is currently work to be done for our SRV library.</EM></P>
+

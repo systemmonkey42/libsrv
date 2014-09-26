@@ -1,0 +1,81 @@
+#!/usr/bin/env less
+
+
+What is this SRV library about?
+
+	Name servers are able to specify services of a domain in a way superior
+	to current practice (using only A, CNAME and MX records). Services are
+	formulated in so-called SRV records. These are hard to use in your
+	networking clients and servers, but not with this library!
+
+
+Why are SRV records any good?
+
+	They solve many problems on the Internet of today:
+	 * SRV records offer load balancing solutions
+	 * SRV records offer fallback options when servers fail (!)
+	 * SRV records avoid that you need to type twice: http:// and www.
+	 * SRV records redirect services to _any_ port you like, on any host
+
+	Imagine this... normally running an Internet phone server at home,
+	but overriding it with the server at work while you are logged in.
+	When logged out at work, your home server acts as the fallback server
+	and takes all messages for you.
+
+	Imagine this... the trustworthiness of email, also made available
+	for the world wide web!
+
+
+So SRV records are complex; is programming them harder?
+
+	No. Socket programming is hell, and it's usually not even done well.
+	This library takes all that trouble away from you. Just invoke
+
+	int sox=insrv_client ("http", "tcp", "dns.vanrein.org", NULL, 0, NULL)
+
+	to obtain a socket for a TCP/IP connection to the web server for
+	dns.vanrein.org. The server side looks the same, by the way, but you
+	will have to accept() the sequence of requests coming in.
+
+	Example code is provided, by the way.
+
+
+Can my domain specify SRV records and older stuff?
+
+	Yes, no problem.
+
+
+Can I use an old-fashioned browser/... to access an SRV domain?
+
+	Yes, if the domain offers both styles, which is never a problem.
+
+
+Can I still access SRV-less domains with your SRV library?
+
+	Yes, there is a fallback program. If no SRV records are found, it
+	will lookup a wellknown port number for the requested service on
+	the domain name, and if that fails, on the domain name prefixed with
+	the service name.
+
+
+Who made it and why?
+
+	The library was made by Rick van Rein <rick@vanrein.org> and he wrote
+	it because he wanted a more mature Internet. And because, to his
+	startlement, there seemed to be no solutions for SRV records anywhere
+	at all (or at least not freely available)!
+
+
+Does my name server support them already?
+
+	It should. All modern BIND name servers do. To be precise, BIND version
+	4.9.5 started supporting them.
+
+
+Does my domain already support these SRV records?
+
+	Probably not. Hardly any do. There is a fight still to be fought here.
+	Inform your sysadmin if you see a chance! Or, if you _are_ the
+	sysadmin, add these records to your domains! If you are a hosting
+	solution, make sure you add support for these SRV records as soon as
+	possible.

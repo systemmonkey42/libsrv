@@ -1,0 +1,36 @@
+<H2>Fallback servers with SRV records</H2>
+
+<P>One advantage of <CODE>SRV</CODE> records is that they enable fallback servers for your domain.
+This scheme is well-known from <CODE>MX</CODE> (mail exchange) records, which indicate a cost (afka priority) for each server, and require clients to try to contact the lowest-cost server first:
+<PRE>
+@           IN MX   10       my.first.mail.server.
+            IN MX   10       my.second.mail.server.
+            IN MX   90       some.fallback.server.
+</PRE>
+This setup defines two mail exchanging host with the same priority for your domain, and allows fallback to a third server in case both your lower-cost servers fail.
+Normally, the load is evenly balanced between the two low-cost servers, and the fallback server would not be addressed at all.</P>
+
+<P>Most people will agree that email is a rock-solid protocol, and trust their email to have arrived if it did not bounce.
+This certainly applies with the use of mature, Un*x-only email solutions.
+Most people will also agree that the world wide web is not nearly as reliable as email.
+Of course, email is simpler because it can be deferred for later retries, but the ability to express these fallback servers certainly helps a lot.</P>
+
+<P>With <CODE>SRV</CODE> records, it is possible to define fallback servers for <EM>any</EM> service, for example:
+<PRE>
+; Mail servers (with fallback support)
+_smtp._tcp  IN SRV  10 0 25  my.first.mail.server.
+            IN SRV  10 0 25  my.second.mail.server.
+            IN SRV  90 0 25  some.fallback.server.
+
+; Web servers (with fallback support)
+_http._tcp  IN SRV  10 0 80  web.host.near.backbone.
+            IN SRV  90 0 80  my.slow.computer.at.home.
+</PRE>
+Can we agree that this fallback scheme would be an improvement, at least for the web servers who have no other way to support this?
+Imagine a world wide web with no downtime for domain's web services, that would be <EM>quote</EM> a change!</P>
+
+<P>Please note, it <EM>is</EM> possible to define multiple computers for the same domain, but most networking clients only consider the first one they get.
+The order of multiple computers is given out in random order by the DNS server, implying even load balancing.
+Although this may be desirable in some cases, it certainly is not the intention when connection speeds differ strongly, as in the situation suggested above.</P>
+
+

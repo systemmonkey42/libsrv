@@ -1,0 +1,43 @@
+<H2>Transition to SRV records</H2>
+
+<P>The services introduced by <CODE>SRV</CODE> records are more powerful than the currently used <CODE>A</CODE>, <CODE>CNAME</CODE> and <CODE>MX</CODE> records, but the transition to the new records is slow.
+This is due to a cycle of nobody uses it, so no domain supports it, so no networking client supports it, and back to nobody uses it.</P>
+
+<P>To break this cycle, it should be straightforward to embed <CODE>SRV</CODE> record support in network client code.
+Unfortunately, these records are complex to handle.
+To solve this, we have setup a library to support them.</P>
+
+<P>In a large phenomenon as the Internet, it is important to allow for gradual transition from the old system to the new one.
+It is expected that both systems will co-exist for a long time.
+The aforementioned library routines have therefore been written to support <CODE>SRV</CODE> records if they are defined on the domain accessed, and otherwise to fall back on <CODE>A</CODE> and <CODE>CNAME</CODE> records.
+This handles the existence of old style domains as well as new style domains on the Internet.</P>
+
+<P>There should also be support for the co-existence of old and new style networking clients accessing your domain.
+This need not be a problem; the co-existence of <CODE>A</CODE> or <CODE>CNAME</CODE> records with <CODE>SRV</CODE> records is possible.
+Old style clients will access the <CODE>A</CODE> and <CODE>CNAME</CODE> records, by accessing routines such as <CODE>gethostbyname</CODE> on their operating system.
+New style clients will note the <CODE>SRV</CODE> records, conclude that the domain is new style, and ignore the <CODE>A</CODE> and <CODE>CNAME</CODE> records for the purposes of contacting a remote service.</P>
+
+<P>Ideally, there would be an online service that relays old-styled clients to new-styled services.
+For example, the following set of definitions would be quite useful:
+<PRE>
+; The service records for my domain:
+_http._tcp      IN SRV  0 10 80  myisp.some.where.
+_http._tcp      IN SRV  0 50 80  quick.else.where.
+_ldap._tcp      IN SRV  0  0 99  my.ldap.host.
+
+; Fallback hosts for networking clients without
+; service record support:
+@               IN CNAME         relay.srv.int.
+</PRE>
+Assuming these definitions in the <CODE>srv.int</CODE> domain:
+<PRE>
+relay.srv.int.  IN CNAME         srv-fwd.some.ips.
+                IN CNAME         ideal.srv.host.
+                IN CNAME         srv.projects.some.where.
+</PRE>
+Where the names under <CODE>srv.int</CODE> would indicate servers that receive a connection request over a well-known port (such as <CODE>80</CODE> for the web) and return instructions to relocate the request to another place on the Internet, or perhaps just forward the connection, based on <CODE>SRV</CODE> records for the requested domain name.</P>
+
+<P>Please note that such an experimental service already runs at <A HREF="http://openldap.org">root.openldap.org</A>, but this covers only LDAP protocol forwarding based on the <CODE>SRV<CODE> records starting with <CODE>_ldap._tcp</CODE>.
+The ideal would be a co-operation of such services with similar services for other protocols <A HREF="http://www.capibara.com">such as the web</A>, so that the above scheme becomes possible.</P>
+
+<P>Until this ideal forwarding solution is a fact, our <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A> also has a fallback option of prefixing the standard service name (such as <CODE>www</CODE> or <CODE>ftp</CODE> before the domain name accessed, and try to reach that name over the default port for the protocol.</P>

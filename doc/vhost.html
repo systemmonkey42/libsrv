@@ -1,0 +1,25 @@
+<H2>Virtual hosting improved</H2>
+
+<P>Virtual hosting is the technique of supporting multiple (sub)domains on a single computer.
+This is beneficial because it makes it profitable to have specialised server providers which are close to the Internet backbones.</P>
+
+<P>Virtual hosting works for protocols that inform the server of the domain name being used to address it.
+These names are usually aliased to the `official' name of the server with a <CODE>CNAME</CODE> tag, or to its IP number with an <CODE>A</CODE> tag.
+The disadvantage of this approach is that such redirection of your name forces you to host <EM>all</EM> the business for that domain at the virtual host.
+This has the disadvantage that only protocols that inform the server of your domain name can be really hosted.
+Ever wondered why all virtual hosting providers help you to <CODE>mail</CODE> and <CODE>web</CODE>, and none helps you to <CODE>ftp</CODE>? Here's your answer.</P>
+
+<P>With <CODE>SRV</CODE> records, you specify redirection <EM>per service</EM> and not for a whole computer number.
+In effect, these records embed knowledge about services into the DNS system; hence their name.
+Unlike older systems with pre-defined ports per service, or requiring a remote lookup for a predefined program number, the <CODE>SRV</CODE> records are so kind to mention the port at the host.
+Do realise, that a virtual hosting provider can opt to offer you your private FTP space on a certain port of their servers; the incoming port number would make it possible to distinguish between multiple clients that they host.
+Anyone interested in setting up hosting solutions for FTP? Come and get it!</P>
+
+<P>Some virtual hosting providers offer only a subname to their own domain; this is more pleasant regarding responsibility issues related to the ownership of an IP number.
+The <CODE>SRV</CODE> records have the advantage of clearly separating the alias from its serving IP number.</P>
+
+<P><B>Related topics:</B>
+<UL>
+<LI> <A HREF="2names.html">Accessing someone else's name</A> e.g. a subname of a hosting provider's domain.
+</UL></P>
+

@@ -1,0 +1,31 @@
+<H2>Accessing another name</H2>
+
+<P>With <CODE>SRV</CODE> records, a service under your domain name is translated to a server name.
+Translating the latter name to an IP number is another step to take.
+This means that a networking client receives two names under which to try contacting a host.</P>
+
+<P>Some protocols send the name under which a server is addressed to the server, so that it may host multiple domains; this is called <EM>virtual hosting</EM>, and it is common practice for web and email.
+Having two names to address a virtual host under only provides more options, namely to first try to use one name, and if that fails, to try the other.
+It seems sensible to test the most specific name, first; that would be the name of your (sub)domain.</P>
+
+<P>One application of this approach is to make use of virtual hosting solutions that offer you a free subdomain but that do not support hosting your domain directly.
+For such services, the first attempt to address them under your domain name would fail, but addressing them under their subdomain (the server name in the SRV record) would succeed.
+For example, this would be possible for web hosting, and perhaps even for email hosting.</P>
+
+<P>This scenario is supported in our <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A> by returning the name of the server contacted to the networking client.</P>
+
+<P><B>Related topics:</B>
+<UL>
+<LI><A HREF="vhost.html">Virtual hosting</A>
+</UL></P>
+
+<!--
+<P><B>Example.</B>
+The <A HREF="http://www.tpc.int">TPC fax service</A> is a wonderful instrument, offering fax delivery over the Internet (as email or through hylafax) and local volunteers that actually send out faxes.
+Their system is based on domain names, where <CODE>8.6.0.1.4.7.8.0.2.1.3.tpc.int</CODE> is their name for my fax number <CODE>+31 20 8741068</CODE>.
+I could setup a fax service under my domain, pointing to their name, as follows:
+<PRE>
+_smtp._tpc  IN SRV  0 0 25 8.6.0.1.4.7.8.0.2.1.3.tpc.int.
+</PRE>
+Unlike <CODE>MX</CODE> records which are not interpreted this way, it is possible to interpret this second name as a possible domain for the email, after my own domain name gets rejected (which it will).</P>
+-->

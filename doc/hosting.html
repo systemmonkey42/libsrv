@@ -1,0 +1,88 @@
+<H2>On Hosting of SRV-relays</H2>
+
+<UL><EM>
+To get the <A HREF="transit.html">transition path</A> to <CODE>SRV</CODE> records started, we need relays.
+Perhaps you could help out?
+</EM></UL>
+
+<H3>Why would I help you?</H3>
+
+<P>The superiority of <CODE>SRV</CODE> records, and their excellent answers to common computing problems, make it likely that the Internet will go that way.
+You yourself will probably benefit from a more mature (stable and reliable) Internet, if not as a company, then surely as a user!</P>
+
+<P>The transition to <CODE>SRV</CODE> records will undoubtly be a slow process.
+And easing that transition is a good thing to attach your name to.
+Your name <EM>will</EM> be attached, in the form of a <CODE>CNAME</CODE> reference to the relay under the domain of your choice.
+Your name will be used in non-intrusive advertisements on every relay, where the protocols allow it.
+Your name will be on the website for this project, which will memorise all sponsors and a short description of their motivation to help out.</P>
+
+<P>With the Internet probably maturing towards <CODE>SRV</CODE> records, and with this project as the only visible initiative going there, most people are likely to end up on the website sooner or later.
+Wouldn't you like your name to be on that website?</P>
+
+
+<H3>Why don't you take care of everything?</H3>
+
+<P>The resource that I'm putting into <CODE>SRV</CODE> records is time, perhaps the most valuable of all resources.
+I am an (enthousiastic) individual, and I like the challenge, but I do not have a company in which to setup the servers I need, let alone doing so in a world-wide distributed manner.</P>
+
+
+<H3>What do you get out of this?</H3>
+
+<P>Mainly, a lot of fun.
+And perhaps some ego-stroking if it starts to catch on.
+I am an <A HREF="http://opensource.org">Open Source</A> enthusiast, not a commercially inclined person.
+It just feels important to me to get the Internet more reliable.</P>
+
+
+<H3>What kind of help is needed?</H3>
+
+<P>Mainly, free and monitored hosting for relays.
+Here are some properties that make them workable:
+<UL>
+<LI> A private IP-number, hosted on a (possibly shared) fast machine.
+	You get to assign any name you like to the IP-number, under your own domain.
+	The machine will be referred by name, for all (technicians) to see.
+<LI> High availability, monitored by you or your institute.
+	Anything reaching the relay machine is old-styled, less reliable technology!
+<LI> Shell access for me or you, to run and maintain the forwarding software.
+<LI> Access to all ports, also &lt;1024, on the IP-number for the relay.
+<LI> A Un*x operating system (lacking ports of the relaying software to other platforms).
+<LI> Nearby, a fast name server which allows recursive queries.
+</UL></P>
+
+<P>More help needed includes good relaying software for protocols currently uncovered.
+If you have such a relay and are willing to allow using it in this project, please let me know!</P>
+
+
+<H3>What will the relaying machines do?</H3>
+
+<P>They will receive requests for Internet connections for services that support virtual hosting.
+They will extract the domain name that was actually addressed, and look that up using the <CODE>SRV</CODE> records for the domain.
+These records will be used to relay the customer to the actual server.</P>
+
+<P>Relaying can be done for all protocols that tell a server under what name they were addressed.
+Where possible and non-intrusive, we will describe your relay (and an URL of your choice) in the protocol:
+<UL>
+<LI> <B>http (option 1):</B>
+	We will return a single page with a full-sized frame referring to the actual page.
+	The <CODE>&lt;TITLE&gt;</CODE> of the page will be set to <CODE>SRV relayed by <EM>you</EM>, and the page will contain a URL of your choice in comments.
+<LI> <B>http (option 2):</B>
+	We will forward the HTTP connection to the actual HTTP server.
+	This is actually done by using HTTP relaying software which makes its connection with the <A HREF="http://dns.vanrein.org/srv/lib">SRV library</A>, and which stores only as much as you will allow.
+<LI> <B>https:</B>
+	Not relayed; an intermediary node seems to conflict with the intentions of the protocol.
+	Moreover, normal secure services are run on a dedicated machine anyway, for security reasons; they can handle their own relaying from that machine.
+<LI> <B>smtp:</B>
+	Not relayed, because <CODE>MX</CODE> records already provide an excellent fallback option.
+<LI> <B>ldap:</B>
+	We return a relaying command asking to connect to the actual LDAP server.
+	This is currently done on <A HREF="http://openldap.org">root.openldap.org</A>; we are unaware of places for little non-intrusive advertisements.
+<LI> <B>ssh:</B>
+	This might be possible, and it would certainly be interesting, also because it supports an excellent protocol that can replace FTP and TELNET, both of which are too simplistic to be suitable for relaying.
+<LI> <B>...</B>
+	If we develop more such protocols, we shall require all relays to upgrade accordingly, because the selection of a relay is made at random and all relays must therefore respond similarly.
+	Of course, all protocol additions will be discussed properly, and there is always the option to retract your server if your dislike a certain protocol.
+</UL></P>
+
+<P>If you currently host relaying services, we kindly request you to consider adding the additional relays, and make sure you use <CODE>SRV</CODE> records for all the relays.
+<EM>Thank you for considering to help!</EM></P>

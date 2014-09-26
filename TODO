@@ -1,0 +1,11 @@
+#!/bin/grep ^-
++ Implement the server connection routine
++ Allow the retrieval of the connected server's name, see doc/2names.html
+- Base load balancing on server nearness, see doc/loadbalance.html
++ Make a (dynamic) library out of this stuff
++ Embed this stuff in examples, such as a HelloWorld server and in Jabber
+- Try to obtain the srv.int domain and get relaying servers under it...
+- Perhaps add encryption, with _tls and/or _ssl in addition to _tcp and _udp.
+- Access not just one service name, but all (_www, _http, ...)
+- Write man pages for srv (on the DNS RR), insrv_client, insrv_server.
+- Cry loudly when all connects/binds fail.  Now it simply quits

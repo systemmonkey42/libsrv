@@ -1,0 +1,39 @@
+
+
+
+
+
+
+
+
+; <<>> DiG 8.2 <<>> _http._tcp.dns.vanrein.org srv 
+;; res options: init recurs defnam dnsrch
+;; got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 4
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 4, ADDITIONAL: 6
+;; QUERY SECTION:
+;;	_http._tcp.dns.vanrein.org, type = SRV, class = IN
+
+;; ANSWER SECTION:
+_http._tcp.dns.vanrein.org.  1D IN SRV  1 0 80 phantom.vanrein.org.
+_http._tcp.dns.vanrein.org.  1D IN SRV  0 0 80 dns.vanrein.org.
+
+;; AUTHORITY SECTION:
+vanrein.org.		1D IN NS	ns1.centralinfo.net.
+vanrein.org.		1D IN NS	ns2.centralinfo.net.
+vanrein.org.		1D IN NS	ns1.granitecanyon.com.
+vanrein.org.		1D IN NS	ns2.granitecanyon.com.
+
+;; ADDITIONAL SECTION:
+phantom.vanrein.org.	1D IN A		212.120.112.48
+dns.vanrein.org.	1D IN A		212.120.112.48
+ns1.centralinfo.net.	2h48m58s IN A	63.102.200.2
+ns2.centralinfo.net.	3h6m34s IN A	63.102.204.130
+ns1.granitecanyon.com.	17h25m49s IN A	205.166.226.38
+ns2.granitecanyon.com.	17h33m41s IN A	204.1.217.148
+
+;; Total query time: 5 msec
+;; FROM: turandot.opera.vanrein.org to SERVER: default -- 192.168.1.5
+;; WHEN: Fri Feb  2 09:33:36 2001
+;; MSG SIZE  sent: 44  rcvd: 341
+

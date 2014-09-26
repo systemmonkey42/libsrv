@@ -1,0 +1,125 @@
+<HTML>
+<HEAD>
+<TITLE>Rick's Open Source Implementation of SRV Resource Records</TITLE>
+<META NAME=keywords content="SRV, DNS, SRV RR, implementation, open source, service records, virtual hosting, modular name servers, name servers, library">
+<META NAME=description content="Service Records, or SRV RR for short, are a useful extension for DNS, because they allow powerful virtual hosting. This page describes an implementation, available to all as Open Source code.">
+</HEAD>
+<BODY BGCOLOR=WHITE>
+<H1>Rick's Open Source Implementation of SRV Resource Records</H1>
+<UL><EM>
+	This page explains why, and roughly how, I implemented support code for
+	service resource records as they are supported by domain name servers.
+	These records make many improvements possible, and these library
+	routines offer their functionality in a general, and highly
+	fault-tolerant way.
+</EM></UL>
+
+<H2>What's wrong with the domain name system</H2>
+
+<P>The domain name system, DNS for short, is somewhat stuck in some past.
+The common records that it defines are <CODE>A</CODE> for IP-address lookup, <CODE>CNAME</CODE> for alias names, and <CODE>MX</CODE> for mail exchanges for a domein.
+Everybody knows these, but seems reluctant to use several other, powerful parts of the DNS.
+The reason?
+Other people's domains don't use the other parts, so no software supports them, and thus there is no use in applying the other parts.
+This is cyclic reasoning, and it is hard to break, even if it means improvement.</P>
+
+<P>Are these so-called <CODE>SRV</CODE> records, or service records, so useful then?
+<A HREF="http://dns.vanrein.org/srv">Yes, they are</A>.</P>
+
+<P>This library code breaks the cyclic reasoning by offering an abstraction around the whole concept of service records, and even provide backward compatibility support to deal with currently common practices.</P>
+
+
+<H2>What's wrong with sockets</H2>
+
+<P>A programmatic interface to a network connection is called a <EM>socket</EM> in Un*x terms.
+Since there are many flavours of networks, and several connection modes, and so on, sockets are a very general mechanism.
+As a result, programming them is a bit of a nuisance, usually performed by copy+paste of relied-upon code.</P>
+
+<P>This has a disadvantage that the same code is made many times over.
+One effect of this is that it becomes hard to change such omnipresent code.
+It would be so much easier if all this similar code would be centralised...</P>
+
+<P>But the most important problem caused by the difficulty of sockets is that code accessing them is rarely well done.
+It is possible to define multiple IP addresses for a single name, but most network client code only tries the first address.
+With the rise of redundant web (and other) servers, it would be nice to try a second IP number if the first fails, but this is not common practice.
+Service records are even more drastic in this respect: they add cost estimation and weighed load balancing to this scheme, thus making socket programming extremely complicated.</P>
+
+<P>We have made the library code really simple to use, and we have put the most fault-tolerant connection scheme thinkable inside.
+We combine knowledge of domain names to address with the services to access them on, which is currently impossible because standard socket support routines never receive both these forms of information.
+This combination allows us to make a very good effort at connecting; insteading of returning <EM>you could try connecting here</EM> we return <EM>this is a connection as you wanted it</EM> and leave only the application-protocol specific details to the programmer.</P>
+
+
+<H2>A bit of example code</H2>
+
+<P>Imagine a <CODE>HelloWorld</CODE> client-server application, which sends a message from a server to any client who connects to it.
+We shall assume a service named <CODE>hello</CODE> that runs over <CODE>tcp</CODE>.
+This service is located at <CODE>a.server.anywhere:123</CODE> and at the half-so-fast server <CODE>b.server.anywhere:126</CODE> by means of an <CODE>SRV</CODE> record in <CODE>our.domain</CODE>:
+<PRE>
+_hello._tcp.our.domain.  IN SRV  0 20 123 a.server.anywhere.
+                         IN SRV  0 10 126 b.server.anywhere.
+</PRE>
+The numbers <CODE>20</CODE> and <CODE>10</CODE> give a desired weight for load balancing; we should take that into account when selecting a server to contact.
+The <CODE>0</CODE> numbers indicate a cost (afka priority), and servers of lower cost are always tried all before trying a server of increased cost.
+Finally, note how the two servers are outside our domain, and how they use different ports for the service.</P>
+
+<P>To set up a client connection, we can use these records, by just programming this bit:
+<PRE>
+sox = insrv_client ("hello", "tcp", "our.domain");
+if (sox < 0) ...
+buflen = recv (sox, buf, BUFMAXLEN, 0);
+write (1, buf, buflen);
+close (sox);
+</PRE>
+The server is not any bit harder:
+<PRE>
+sox = insrv_server ("hello", "tcp", "our.domain");
+if (sox < 0) ...
+buflen = send (sox, "Hello world!\n", 13, 0);
+close (sox);
+</PRE>
+And that's all needed to set up a simple client/server protocol!</P>
+
+<P><B>How the client works.</B>
+The client invokes <CODE>insrv_client</CODE> with the proper information to lookup the <CODE>SRV</CODE> record, and schedules a sequence of servers based on cost and weighed load balancing.
+It than tries to connect to each of the servers in this sequence, until a connection succeeds.
+That connection is returned.<BR>
+If there is no <CODE>SRV</CODE> record, the client library code will fake two; the first will just be the domain name with low cost, the higher-cost other will be the domain name prefixed with the <EM>standard</EM> name for the service protocol; both faked <CODE>SRV</CODE> records refer to a port number that is well-known for the service requested.</P>
+
+<P><B>How the server works.</B>
+Server sockets work by binding them to an address and then specifying how many pending connections will still be listened to.
+The binding is attempted in a sequence constructed just like for the client code, failing if an attempted combination of IP number and port number is already open for another socket, or when it is not local to the host.
+The server routine also returns a socket.</P>
+
+<P><B>How client and server cooperate.</B>
+The client and server code in our library refers to the same <CODE>SRV</CODE> record (faked if necessary), thus guaranteeing agreement between client and server on possible server addresses and port numbers on each.
+The server code attempts to run a server on its local host, the client code connects to a server host to find that service.<BR>
+As a result, a pair of client and server code implementing the same <CODE>SRV</CODE> record leads to a network connection, with a socket constructed automatically at each end.
+Could it be simpler?</P>
+
+
+<H2>Towards more reliability and efficiency</H2>
+
+<P>Many big vendors on the Internet, for example IBM and Microsoft, host their website at multiple computers, and hope to spread the load by returning multiple IP numbers for the <CODE>www</CODE> name under their domains.
+DNS is particularly friendly to this approach, by returning these addresses in an arbitrary order, so that even implementations that just takes the first IP address are spread evenly over the web servers.
+Unfortunately, these dumb (and all too common) network clients will not work if that first IP address points to a web server which is down.
+For this reason, it is imperative that all IP numbers are tried; our library code takes care of this, of course.</P>
+
+<P>With <CODE>SRV</CODE> records, the expression of relative weight for load balancing allows more refined expression of server performance.
+Although this is a large improvement, an even more interestig option stems from the treatment of these load balancing weights in the networking client.<BR>
+The selection of the servers to try is usually random-based, taking the weights of the servers into account.
+But the additional knowledge of nearness information, available to the networking client, could be helpful to change `random' into `mostly based on nearness', which still gives a globally evenly balanced load for the servers.</P>
+
+<P>The two approaches of multiple-IP and <CODE>SRV</CODE> records with weights can be combined, because the servers pointed at in <CODE>SRV</CODE> records are names, and each of these names can fall apart in several IP numbers.
+Naturally, our library handles this situation well.</P>
+
+<P>If anything is disturbing on Un*x, it is a system which does similar things in different ways, depending on the network client used.
+By isolating the above approaches to reliability and efficiency in a library, it becomes easy for any program to use the code.</P>
+
+<P>The result is a library with routines which are <EM>very</EM> easy to use for the network programmer, and which make contact with a remote service with a lot of determination in finding `the other'.
+If it gives up, then <EM>nothing</EM> was possible.</P>
+
+
+<P><HR>SRV records are advocated by <A HREF="http://dns.vanrein.org/srv">Rick van Rein</A>.</P>
+
+</BODY>
+</HTML>
